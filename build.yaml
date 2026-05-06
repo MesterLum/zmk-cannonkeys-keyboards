@@ -17,44 +17,10 @@
 #     artifact-name: corne_left_with_logging
 #
 ---
-board: ["minimi40"]
+# Currently only building the Link split keyboard. Other CannonKeys boards
+# are kept below, commented out, so they can be re-enabled by uncommenting.
+# board: ["minimi40"]
 include:
-  - board: bakeneko60_go
-    artifact-name: bakeneko60_go
-  - board: bakeneko60_go
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: bakeneko60_go_studio  
-  - board: ck65_w
-    artifact-name: ck65_w
-  - board: ck65_w
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: ck65_w_studio
-  - board: ck60_w
-    artifact-name: ck60_w
-  - board: ck60_w
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: ck60_w_studio
-  - board: photon
-    artifact-name: photon
-  - board: photon
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: photon_studio
-  - board: minimi40
-    artifact-name: minimi40
-  - board: minimi40
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: minimi40_studio
-  - board: cerberus
-    artifact-name: cerberus
-  - board: cerberus
-    snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: cerberus_studio
   - board: link_right
     shield: nice_view
     snippet: studio-rpc-usb-uart
@@ -64,4 +30,48 @@ include:
     shield: nice_view
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
-    artifact-name: link_left_studio  
+    artifact-name: link_left_studio
+  # settings_reset firmware: flash on each half once to clear stored BLE
+  # bonds and ZMK settings, then re-flash the regular firmware on both.
+  - board: link_left
+    shield: settings_reset
+    artifact-name: link_left_reset
+  - board: link_right
+    shield: settings_reset
+    artifact-name: link_right_reset
+  # - board: bakeneko60_go
+  #   artifact-name: bakeneko60_go
+  # - board: bakeneko60_go
+  #   snippet: studio-rpc-usb-uart
+  #   cmake-args: -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: bakeneko60_go_studio
+  # - board: ck65_w
+  #   artifact-name: ck65_w
+  # - board: ck65_w
+  #   snippet: studio-rpc-usb-uart
+  #   cmake-args: -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: ck65_w_studio
+  # - board: ck60_w
+  #   artifact-name: ck60_w
+  # - board: ck60_w
+  #   snippet: studio-rpc-usb-uart
+  #   cmake-args: -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: ck60_w_studio
+  # - board: photon
+  #   artifact-name: photon
+  # - board: photon
+  #   snippet: studio-rpc-usb-uart
+  #   cmake-args: -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: photon_studio
+  # - board: minimi40
+  #   artifact-name: minimi40
+  # - board: minimi40
+  #   snippet: studio-rpc-usb-uart
+  #   cmake-args: -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: minimi40_studio
+  # - board: cerberus
+  #   artifact-name: cerberus
+  # - board: cerberus
+  #   snippet: studio-rpc-usb-uart
+  #   cmake-args: -DCONFIG_ZMK_STUDIO=y
+  #   artifact-name: cerberus_studio
