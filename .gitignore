@@ -1,0 +1,14 @@
+# West / Zephyr workspace and build artifacts
+.build/
+build/
+
+# direnv / nix
+.direnv/
+result
+result-*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
