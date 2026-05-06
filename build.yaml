@@ -22,12 +22,12 @@
 # board: ["minimi40"]
 include:
   - board: link_right
-    shield: nice_view
+    shield: nice_epaper
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
     artifact-name: link_right_studio
   - board: link_left
-    shield: nice_view
+    shield: nice_epaper
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
     artifact-name: link_left_studio
