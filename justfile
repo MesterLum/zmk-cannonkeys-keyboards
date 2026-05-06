@@ -12,6 +12,15 @@ repo        := justfile_directory()
 workspace   := env_var_or_default("ZMK_WORKSPACE", repo / ".build")
 config_link := workspace / "config"
 
+# Invoke west via `python3 -m west` instead of the `west` binary in the dev
+# shell. The nixpkgs west wrapper is a Python interpreter wrapper that
+# prepends a *bare* python3 (no setuptools/pkg_resources) onto PATH for its
+# child processes — that breaks downstream `#!/usr/bin/env python3` scripts
+# (notably nanopb's protoc wrapper for ZMK studio builds). Going through
+# `python3 -m west` uses the dev shell's pythonEnv directly and keeps PATH
+# clean for child processes.
+west := "python3 -m west"
+
 # Default: list available recipes.
 default:
     @just --list
@@ -33,26 +42,28 @@ _ensure-workspace:
 
 _west-init:
     if [ ! -d "{{workspace}}/.west" ]; then \
-        cd "{{workspace}}" && west init -l config; \
+        cd "{{workspace}}" && {{west}} init -l config; \
     else \
         echo "west already initialised at {{workspace}}"; \
     fi
 
 # Pull / refresh Zephyr, ZMK and modules.
 update:
-    cd "{{workspace}}" && west update
-    cd "{{workspace}}" && west zephyr-export
+    cd "{{workspace}}" && {{west}} update
+    cd "{{workspace}}" && {{west}} zephyr-export
 
 # Build a board.  Usage:
 #   just build photon
 #   just build photon studio-rpc-usb-uart studio
+#   just build link_left nice_view studio-rpc-usb-uart link_left_studio
 #
 # Args:
 #   BOARD     – e.g. photon, ck65_w, cerberus, link_left, link_right, ...
+#   SHIELD    – optional Zephyr shield (e.g. nice_view)
 #   SNIPPET   – optional Zephyr snippet (e.g. studio-rpc-usb-uart)
 #   VARIANT   – optional name suffix appended to the build dir / artifact,
 #               useful for distinguishing studio builds etc.
-build BOARD SNIPPET="" VARIANT="":
+build BOARD SHIELD="" SNIPPET="" VARIANT="":
     #!/usr/bin/env bash
     set -euo pipefail
     cd "{{workspace}}"
@@ -60,14 +71,17 @@ build BOARD SNIPPET="" VARIANT="":
     [ -n "{{VARIANT}}" ] && suffix="_{{VARIANT}}"
     [ -z "{{VARIANT}}" ] && [ -n "{{SNIPPET}}" ] && suffix="_{{SNIPPET}}"
     build_dir="build/{{BOARD}}${suffix}"
+    shield_arg=""
+    [ -n "{{SHIELD}}" ] && shield_arg="-DSHIELD={{SHIELD}}"
     snippet_arg=""
     [ -n "{{SNIPPET}}" ] && snippet_arg="-S {{SNIPPET}}"
     extra_cmake=""
     [ -n "{{SNIPPET}}" ] && extra_cmake="-DCONFIG_ZMK_STUDIO=y"
-    echo ">> west build -d $build_dir -b {{BOARD}} $snippet_arg"
-    west build -d "$build_dir" -s zmk/app -b {{BOARD}} $snippet_arg -- \
+    echo ">> {{west}} build -d $build_dir -b {{BOARD}} $shield_arg $snippet_arg"
+    {{west}} build -d "$build_dir" -s zmk/app -b {{BOARD}} $snippet_arg -- \
         -DZMK_CONFIG="{{repo}}/config" \
         -DZMK_EXTRA_MODULES="{{repo}}" \
+        $shield_arg \
         $extra_cmake
     artifact=$(ls "$build_dir/zephyr/zmk."{uf2,bin,hex} 2>/dev/null | head -n1 || true)
     [ -n "$artifact" ] && echo "Artifact: {{workspace}}/$artifact"
@@ -86,9 +100,10 @@ build-all:
     entries.extend(matrix.get("include", []) or [])
     for e in entries:
         board = e["board"]
+        shield = e.get("shield", "")
         snippet = e.get("snippet", "")
         variant = e.get("artifact-name", "")
-        cmd = ["just", "build", board, snippet, variant]
+        cmd = ["just", "build", board, shield, snippet, variant]
         print(">>", " ".join(cmd))
         subprocess.run(cmd, check=True)
     PY
@@ -99,7 +114,7 @@ flash BOARD VARIANT="":
     set -euo pipefail
     cd "{{workspace}}"
     suffix=""; [ -n "{{VARIANT}}" ] && suffix="_{{VARIANT}}"
-    west flash -d "build/{{BOARD}}${suffix}"
+    {{west}} flash -d "build/{{BOARD}}${suffix}"
 
 # Copy the built .uf2 to a mounted bootloader volume.  Most ZMK boards in
 # this repo are nice_nano-style and expose a USB MSC drive when in
@@ -153,7 +168,7 @@ doctor:
     echo "GNUARMEMB_TOOLCHAIN_PATH=${GNUARMEMB_TOOLCHAIN_PATH:-unset}"
     if [ -d "{{workspace}}/.west" ]; then
         echo "west status:"
-        (cd "{{workspace}}" && west list 2>&1 | sed 's/^/  /') || true
+        (cd "{{workspace}}" && {{west}} list 2>&1 | sed 's/^/  /') || true
     else
         echo "workspace not initialised – run 'just init'"
     fi

@@ -31,6 +31,9 @@
           setuptools
           pip
           wheel
+          # nanopb generator (required by ZMK studio builds)
+          protobuf
+          grpcio-tools
         ]);
 
         armToolchain = pkgs.gcc-arm-embedded;
