@@ -19,10 +19,16 @@ default:
 # One-shot: create the workspace and pull all sources.
 init: _ensure-workspace _west-init update
 
+# west's `init -l <dir>` follows symlinks when computing topdir, so a directory
+# symlink ({{config_link}} -> {{repo}}/config) makes west pick the repo root as
+# topdir and clone projects there. Use a real directory with a file symlink to
+# west.yml inside it instead — west sees the directory as local to {{workspace}}.
 _ensure-workspace:
     mkdir -p "{{workspace}}"
-    if [ ! -e "{{config_link}}" ]; then \
-        ln -s "{{repo}}/config" "{{config_link}}"; \
+    if [ -L "{{config_link}}" ]; then rm "{{config_link}}"; fi
+    mkdir -p "{{config_link}}"
+    if [ ! -e "{{config_link}}/west.yml" ]; then \
+        ln -s "{{repo}}/config/west.yml" "{{config_link}}/west.yml"; \
     fi
 
 _west-init:
