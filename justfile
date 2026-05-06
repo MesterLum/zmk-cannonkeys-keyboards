@@ -83,8 +83,21 @@ build BOARD SHIELD="" SNIPPET="" VARIANT="":
         -DZMK_EXTRA_MODULES="{{repo}}" \
         $shield_arg \
         $extra_cmake
-    artifact=$(ls "$build_dir/zephyr/zmk."{uf2,bin,hex} 2>/dev/null | head -n1 || true)
-    [ -n "$artifact" ] && echo "Artifact: {{workspace}}/$artifact"
+    artifact=""
+    for ext in uf2 bin hex; do
+        if [ -f "$build_dir/zephyr/zmk.$ext" ]; then
+            artifact="$build_dir/zephyr/zmk.$ext"
+            break
+        fi
+    done
+    if [ -n "$artifact" ]; then
+        ext="${artifact##*.}"
+        name="{{VARIANT}}"
+        [ -z "$name" ] && name="{{BOARD}}"
+        mkdir -p "{{repo}}/firmware"
+        cp "$artifact" "{{repo}}/firmware/${name}.${ext}"
+        echo "Artifact: {{repo}}/firmware/${name}.${ext}"
+    fi
 
 # Build everything declared in build.yaml.
 build-all:

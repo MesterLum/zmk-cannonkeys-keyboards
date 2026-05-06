@@ -1,6 +1,7 @@
 # West / Zephyr workspace and build artifacts
 .build/
 build/
+firmware/
 
 # direnv / nix
 .direnv/
